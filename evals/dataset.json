@@ -1,0 +1,127 @@
+[
+  {
+    "category": "lookup",
+    "question": "What's the refund policy for annual plans?",
+    "reference_answer": "Annual plans can be refunded, prorated for the unused part of the term, within 30 days of purchase or renewal. After 30 days there are no refunds. A service credit may be possible, but it needs approval from the VP of Customer Success."
+  },
+  {
+    "category": "lookup",
+    "question": "How much does the Starter plan cost?",
+    "reference_answer": "Starter costs $10 per seat per month (up to 20 seats)."
+  },
+  {
+    "category": "lookup",
+    "question": "What are the prices for the Team plan?",
+    "reference_answer": "Team is sold in seat bundles: up to 25 seats for $500/month, up to 50 seats for $900/month, and up to 100 seats for $1,600/month."
+  },
+  {
+    "category": "lookup",
+    "question": "What uptime do you guarantee for Enterprise customers?",
+    "reference_answer": "Enterprise has a 99.9% monthly uptime SLA."
+  },
+  {
+    "category": "lookup",
+    "question": "How quickly will support respond to a P1 outage if we're on Enterprise?",
+    "reference_answer": "P1 (critical) issues on Enterprise get a first response within 1 hour, 24/7."
+  },
+  {
+    "category": "lookup",
+    "question": "Which integrations does Fernbrook support?",
+    "reference_answer": "Fernbrook has four native integrations: Salesforce, Slack, Jira, and HubSpot. HubSpot is only available on Team and Enterprise."
+  },
+  {
+    "category": "lookup",
+    "question": "Is Fernbrook SOC 2 certified?",
+    "reference_answer": "Yes. Fernbrook is SOC 2 Type II certified, and customers can request the report under NDA."
+  },
+  {
+    "category": "lookup",
+    "question": "How long do you keep our data after we cancel?",
+    "reference_answer": "Workspace data is kept for 90 days after cancellation, then permanently deleted."
+  },
+  {
+    "category": "lookup",
+    "question": "Can I add seats in the middle of my billing cycle?",
+    "reference_answer": "Yes. Seats can be added at any time; the added seats are prorated for the rest of the billing period (on Team, going past your bundle moves you up to the next bundle immediately, prorated)."
+  },
+  {
+    "category": "lookup",
+    "question": "What support hours do we get on the Team plan?",
+    "reference_answer": "Team includes business-hours support by email and chat, Monday to Friday, 9 a.m. to 6 p.m. US Eastern Time. There is no 24/7 support or uptime SLA on Team."
+  },
+  {
+    "category": "reasoning",
+    "question": "We're on Team with 60 people. What do we pay, and can we use SSO?",
+    "reference_answer": "60 people needs the 100-seat Team bundle, which is $1,600 per month. SSO is not available on Team; SSO/SAML is Enterprise only."
+  },
+  {
+    "category": "reasoning",
+    "question": "We're on Starter and want to connect HubSpot. Can we?",
+    "reference_answer": "No. HubSpot is only available on Team and Enterprise. You would need to upgrade to Team (starting at $500/month for up to 25 seats) to use it."
+  },
+  {
+    "category": "reasoning",
+    "question": "We have 8 people. Is Starter or the smallest Team bundle cheaper per month?",
+    "reference_answer": "Starter is cheaper: 8 seats x $10 = $80/month, versus $500/month for the smallest (25-seat) Team bundle."
+  },
+  {
+    "category": "reasoning",
+    "question": "We're a 30-person company that wants Fernbrook. What's the cheapest plan we can be on, and what will it cost?",
+    "reference_answer": "Starter only allows up to 20 seats, so the cheapest option is Team on the 50-seat bundle at $900 per month."
+  },
+  {
+    "category": "reasoning",
+    "question": "We're on Enterprise. Can our employees log in through Okta?",
+    "reference_answer": "Yes. Enterprise includes SSO via SAML 2.0, and Okta is a supported identity provider. SCIM provisioning is also available."
+  },
+  {
+    "category": "reasoning",
+    "question": "We want to drop from the 100-seat Team bundle to the 50-seat bundle today to save money. When does the lower price start?",
+    "reference_answer": "At your next renewal. Downgrades take effect at renewal, so you keep paying $1,600/month until then, and then move to $900/month. There's no refund or credit for the rest of the current term."
+  },
+  {
+    "category": "edge_case",
+    "question": "It's been 45 days since we bought our annual plan. Can I get a refund?",
+    "reference_answer": "No. Annual plans are only refundable within 30 days, so a refund isn't available at 45 days. A service credit may be possible, but it requires approval from the VP of Customer Success, so it can't be promised."
+  },
+  {
+    "category": "edge_case",
+    "question": "We bought an annual Team plan 3 weeks ago and it's not working out. Can we cancel and get our money back?",
+    "reference_answer": "Yes. You're within the 30-day window, so you're eligible for a prorated refund of the unused part of the annual term."
+  },
+  {
+    "category": "edge_case",
+    "question": "We're on a monthly Starter plan. Can we get a refund for this month if we cancel today?",
+    "reference_answer": "No. Monthly plans aren't refundable. If you cancel, the workspace stays active until the end of the current billing period and you won't be charged again."
+  },
+  {
+    "category": "edge_case",
+    "question": "We canceled our workspace four months ago. Can you restore our data?",
+    "reference_answer": "No. Data is only kept for 90 days after cancellation and then permanently deleted. At about four months (more than 90 days), it can't be recovered."
+  },
+  {
+    "category": "edge_case",
+    "question": "We're on Team and Fernbrook had a 3-hour outage last week. Do we get SLA credits?",
+    "reference_answer": "Team doesn't include an uptime SLA; the 99.9% SLA is Enterprise only. Any service credit would be discretionary and needs approval from the VP of Customer Success, so it can be requested but not promised."
+  },
+  {
+    "category": "out_of_scope",
+    "question": "Do you integrate with Asana?",
+    "reference_answer": "Asana isn't a supported integration. Fernbrook's native integrations are Salesforce, Slack, Jira, and HubSpot. The answer should not claim or imply an Asana integration exists or is coming."
+  },
+  {
+    "category": "out_of_scope",
+    "question": "Is Fernbrook HIPAA compliant, and will you sign a BAA?",
+    "reference_answer": "The handbook doesn't cover HIPAA or BAAs. The assistant should say it doesn't have that information and offer to connect the customer with the Security team (security@fernbrook.io), without claiming HIPAA compliance either way."
+  },
+  {
+    "category": "out_of_scope",
+    "question": "Can we run Fernbrook on-premises on our own servers?",
+    "reference_answer": "The handbook doesn't mention an on-premises or self-hosted option (Fernbrook is described as a cloud-hosted SaaS product). The assistant should not invent an on-prem offering and should offer to check with Sales."
+  },
+  {
+    "category": "out_of_scope",
+    "question": "Do you offer a discount for nonprofits?",
+    "reference_answer": "The handbook doesn't mention nonprofit discounts. The assistant should say it doesn't have that information and offer to check with Sales, without inventing a discount."
+  }
+]
