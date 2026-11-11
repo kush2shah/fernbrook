@@ -1,4 +1,8 @@
-"""System prompts for the Fernbrook support chatbot.
+"""Source text for the chatbot's instructions (prompt A and B).
+
+This is the authoring copy. `python -m app.context` pushes it to LangSmith
+Context Hub, and the chatbot pulls its context from there at runtime (see
+app/context.py). Edit here, then push with `python -m app.context --force`.
 
 Two prompt variants share the same persona, grounding rules, and handbook. Only
 the style instructions differ, so any difference between experiments comes from
@@ -32,12 +36,3 @@ PROMPT_STYLES: dict[str, str] = {
 - Be warm and thorough. Acknowledge the customer's situation, then explain the answer fully, including relevant details and caveats from the handbook.
 - Finish with a short "Suggested next steps" list of concrete actions the customer can take (for example, where to click in Settings or which team to contact).""",
 }
-
-
-def build_system_prompt(style: str) -> str:
-    if style not in PROMPT_STYLES:
-        raise ValueError(f"Unknown prompt style {style!r}; expected one of {sorted(PROMPT_STYLES)}")
-    return (
-        f"{BASE_INSTRUCTIONS}\n\n{PROMPT_STYLES[style]}\n\n"
-        f"<handbook>\n{load_handbook()}\n</handbook>"
-    )

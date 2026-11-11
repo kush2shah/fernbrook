@@ -2,6 +2,7 @@
 
     python evals/run.py
 
+0. Pushes the chatbot context to Context Hub (if missing).
 1. Pushes evals/dataset.json to LangSmith as `fernbrook-support` (if missing).
 2. Runs the 4 configs (2 models x 2 prompts) as experiments with the
    single-run evaluators.
@@ -25,6 +26,7 @@ from langsmith import Client, evaluate  # noqa: E402
 from langsmith.run_trees import get_cached_client  # noqa: E402
 
 from app.chat import chat  # noqa: E402
+from app.context import context_version, push_context  # noqa: E402
 from app.config import ALL_CONFIGS, CHAT_EFFORT, ChatConfig  # noqa: E402
 from evals.evaluators import (  # noqa: E402
     JUDGE_MODEL,
@@ -87,6 +89,7 @@ def run_experiment(config: ChatConfig):
             "model_variant": config.model,
             "model": config.model_id,
             "prompt_variant": config.prompt,
+            "context_commit": context_version(config.prompt),
             "effort": CHAT_EFFORT,
             "judge_model": JUDGE_MODEL,
         },
@@ -198,6 +201,7 @@ def summarize_pairwise(label, pairwise, name_a, name_b, scores_by_config, run_to
 
 def main() -> None:
     client = Client()
+    push_context()  # no-op if the Context Hub commits already exist
     ensure_dataset(client)
 
     results = {cfg: run_experiment(cfg) for cfg in ALL_CONFIGS}

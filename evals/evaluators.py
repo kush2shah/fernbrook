@@ -18,7 +18,7 @@ from langsmith import Client
 from langsmith.schemas import Run
 from langsmith.wrappers import wrap_anthropic
 
-from app.prompts import load_handbook
+from app.context import load_context
 
 JUDGE_MODEL = os.getenv("JUDGE_MODEL", "claude-opus-5-5")
 JUDGE_EFFORT = os.getenv("JUDGE_EFFORT", "medium")
@@ -123,7 +123,7 @@ Score 1 if every factual claim is supported, 0 if any claim is unsupported.
 
 def no_hallucination(inputs: dict, outputs: dict) -> dict:
     verdict = _judge(
-        NO_HALLUCINATION_SYSTEM.format(handbook=load_handbook()),
+        NO_HALLUCINATION_SYSTEM.format(handbook=load_context("concise")[2]),
         f"<question>\n{inputs['question']}\n</question>\n\n<chatbot_answer>\n{outputs['answer']}\n</chatbot_answer>",
         properties={
             "unsupported_claims": {

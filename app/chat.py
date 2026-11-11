@@ -8,11 +8,11 @@ Usage:
 import argparse
 
 import anthropic
-from langsmith import traceable
+from langsmith import get_current_run_tree, traceable
 from langsmith.wrappers import wrap_anthropic
 
 from app.config import CHAT_EFFORT, CHAT_MAX_TOKENS, ChatConfig
-from app.prompts import build_system_prompt
+from app.context import build_system_prompt
 
 # wrap_anthropic logs each API call as a child LLM run under the chat() trace.
 client = wrap_anthropic(anthropic.Anthropic())
@@ -21,20 +21,24 @@ client = wrap_anthropic(anthropic.Anthropic())
 @traceable(name="fernbrook_chat", run_type="chain")
 def chat(question: str, config: ChatConfig | None = None) -> str:
     config = config or ChatConfig()
+    system, context_commit = build_system_prompt(config.prompt)  # pulled from Context Hub
+    variant = {
+        "model": config.model_id,
+        "model_variant": config.model,
+        "prompt_variant": config.prompt,
+        "context_commit": context_commit,
+    }
+    # Tag the top-level trace so the tracing project can be filtered/grouped by version.
+    if run := get_current_run_tree():
+        run.metadata.update(variant)
     response = client.messages.create(
         model=config.model_id,
         max_tokens=CHAT_MAX_TOKENS,
-        system=build_system_prompt(config.prompt),
+        system=system,
         messages=[{"role": "user", "content": question}],
         output_config={"effort": CHAT_EFFORT},
         # The handbook is identical across calls, so cache the prompt prefix.
         cache_control={"type": "ephemeral"},
-        langsmith_extra={
-            "metadata": {
-                "model_variant": config.model,
-                "prompt_variant": config.prompt,
-            }
-        },
     )
     if response.stop_reason == "refusal":
         return "Sorry, I can't help with that request. Please contact support@fernbrook.io."

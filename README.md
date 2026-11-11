@@ -1,6 +1,8 @@
 # Fernbrook Support Chatbot
 
-A deliberately simple support chatbot for a fictional SaaS company, Fernbrook. It exists to demo **LangSmith experiments** and **pairwise experiments**. There are no tools, no RAG, and no agent loop: the whole handbook (`data/handbook.md`) goes into the system prompt, and two variables can be swapped. See [SPEC.md](SPEC.md) for the full spec.
+A deliberately simple support chatbot for a fictional SaaS company, Fernbrook. It exists to demo **LangSmith experiments** and **pairwise experiments**. There are no tools, no RAG, and no agent loop: the whole handbook goes into the system prompt, and two variables can be swapped. See [SPEC.md](SPEC.md) for the full spec.
+
+The chatbot's context (instructions + handbook) is versioned in **LangSmith Context Hub** as the agent repo `fernbrook-support`. Prompt A and prompt B are two commits of that repo, and the chatbot pulls its context by commit hash at runtime. Every trace and experiment records the `context_commit` it ran with.
 
 | Variable | Options |
 | --- | --- |
@@ -23,11 +25,24 @@ cp .env.example .env   # then fill in LANGSMITH_API_KEY and ANTHROPIC_API_KEY
 
 ## Run it
 
+Push the context to Context Hub (`run.py` also does this automatically if it's missing):
+
+```bash
+python -m app.context           # creates the concise + friendly commits, saves hashes to app/context_versions.json
+python -m app.context --force   # after editing app/prompts.py or data/handbook.md, push new commits
+```
+
 Ask one question (traced to the `LANGSMITH_PROJECT` project):
 
 ```bash
 python -m app.chat "We're on Team with 60 people. What do we pay, and can we use SSO?"
 python -m app.chat --model y --prompt friendly "Do you integrate with Asana?"
+```
+
+Seed the tracing project with 60 realistic customer messages (Haiku + friendly prompt by default, tagged with plan, channel, and user ID), for demoing "build a dataset from real traffic":
+
+```bash
+python evals/seed_traffic.py
 ```
 
 Run the full experiment suite:
@@ -38,7 +53,7 @@ python evals/run.py
 
 This makes 4 experiments, then 2 pairwise comparisons, with no manual steps:
 
-1. Pushes `evals/dataset.json` (25 examples) to LangSmith as `fernbrook-support`, if it doesn't exist yet.
+1. Pushes the context to Context Hub if it isn't there yet, then pushes `evals/dataset.json` (25 examples) to LangSmith as `fernbrook-support`, if it doesn't exist yet.
 2. Runs the 4 configs as experiments named `model-<x|y>__prompt-<concise|friendly>-<suffix>`, scored by:
    - `correctness`: LLM judge vs the reference answer (0/1)
    - `word_count` and `conciseness`: raw length, plus an LLM judge for "longer than needed?" (0/1)
@@ -54,15 +69,19 @@ A full run makes 100 chatbot calls, 300 single-run judge calls, and 50 pairwise 
 
 ```
 ├── SPEC.md
-├── data/handbook.md       # the knowledge doc (~3k words), loaded into the system prompt
+├── data/handbook.md       # the knowledge doc (~3k words), source for Context Hub
 ├── app/
 │   ├── chat.py            # chat(question, config), @traceable + wrapped Anthropic client
 │   ├── config.py          # model/prompt variables, ChatConfig
-│   └── prompts.py         # shared grounding rules + prompt A (concise) and B (friendly)
+│   ├── context.py         # push/pull the context to/from Context Hub
+│   ├── context_versions.json  # Context Hub commit hash for each prompt
+│   └── prompts.py         # source text: grounding rules + prompt A (concise) and B (friendly)
 ├── evals/
 │   ├── dataset.json       # 10 lookups, 6 reasoning, 5 edge cases, 4 out-of-scope
 │   ├── evaluators.py      # correctness, conciseness, no_hallucination, preferred_by_customer
-│   └── run.py             # the one-command experiment runner
+│   ├── run.py             # the one-command experiment runner
+│   ├── seed_traffic.py    # seeds the tracing project with realistic traffic
+│   └── traffic.json       # 60 seeded customer messages
 ├── .env.example
 └── requirements.txt
 ```
@@ -76,11 +95,11 @@ A full run makes 100 chatbot calls, 300 single-run judge calls, and 50 pairwise 
 **3. Compare the 4 experiments (1.5 min).** On the dataset's **Experiments** tab, select all four `model-*__prompt-*` experiments and click **Compare**. Points to make (numbers from the first full run):
 - `correctness` is similar across all four (0.92–1.00). Both models get the facts right from the handbook.
 - `word_count` and `conciseness` split by **prompt**: concise answers average about 52 words and pass `conciseness` 92% of the time. Friendly answers average 250–285 words and never pass.
-- `no_hallucination` drops sharply with the friendly prompt (0.56 on Haiku and 0.72 on Sonnet, vs 0.96 and 1.00 with the concise prompt). Click into a failing cell: the judge's comment almost always flags the "Suggested next steps" making up UI paths the handbook never mentions, such as "upgrade under Settings → Billing → Change plan". Asking for next steps pushes the model past what it knows.
+- `no_hallucination` drops sharply with the friendly prompt (0.56 on Haiku and 0.64–0.72 on Sonnet, vs 0.96 and 1.00 with the concise prompt). Click into a failing cell: the judge's comment almost always flags the "Suggested next steps" making up UI paths the handbook never mentions, such as "upgrade under Settings → Billing → Change plan". Asking for next steps pushes the model past what it knows.
 
 **4. The pairwise results (1.5 min).** Open the dataset's **Pairwise Experiments** tab. The aggregate scores tell you which answer is shorter, not which one a customer would rather get. The pairwise judge answers that directly:
-- `pairwise__prompt-concise-vs-friendly__model-y`: concise won 24 of 25. The friendly tone didn't buy any customer preference.
-- `pairwise__model-x-vs-y__prompt-concise`: Haiku 9, Sonnet 10, 6 ties. With a good prompt, customers can't tell the cheap model from the stronger one, which is a cost argument aggregate scores alone wouldn't make.
+- `pairwise__prompt-concise-vs-friendly__model-y`: concise won 23–24 of 25 across two runs. The friendly tone didn't buy any customer preference.
+- `pairwise__model-x-vs-y__prompt-concise`: roughly even (Haiku 9–11, Sonnet 10, 4–6 ties across two runs). With a good prompt, customers can't tell the cheap model from the stronger one, which is a cost argument aggregate scores alone wouldn't make.
 Use the thumbs up/down header buttons to filter to the examples each side won.
 
 **5. One disagreement, up close (30 s).** `run.py` ends by listing examples where the customer-preferred answer scored lower on a single-run metric. In the first run, the one friendly win was "We're on Starter and want to connect HubSpot. Can we?" The friendly answer was preferred even though it failed both `conciseness` and `no_hallucination`. Open it in the prompt pairwise view and read both answers side by side. The concise answer says "upgrade to Team" but never says what Team costs. The friendly answer includes the $500/month starting price, which is what the customer needs to decide. It also tells them to upgrade under "Settings → Billing → Change plan", which the handbook never says. Aggregate scores mark the friendly answer down twice. The customer judge still prefers it, because it answers the question the customer actually has. Each pairwise comment starts with `Preferred: <experiment>  (A = …, B = …)` so the randomized order stays readable.
